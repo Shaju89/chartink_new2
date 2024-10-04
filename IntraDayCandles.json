@@ -1,0 +1,68 @@
+{
+    "candles": [
+        {
+            "Scrip": "BOSCHLTD",
+            "Action": "SELL",
+            "Name": "Bosch Limited",
+            "PerChg": -1.05,
+            "Close": 36734.5,
+            "Volume": 35351
+        },
+        {
+            "Scrip": "LINDEINDIA",
+            "Action": "SELL",
+            "Name": "Linde India Limited",
+            "PerChg": -2.88,
+            "Close": 7996.3,
+            "Volume": 72961
+        },
+        {
+            "Scrip": "MCX",
+            "Action": "SELL",
+            "Name": "Multi Commodity Exchange Of India Limited",
+            "PerChg": 0.35,
+            "Close": 5805.15,
+            "Volume": 482350
+        },
+        {
+            "Scrip": "BHARTIARTL",
+            "Action": "SELL",
+            "Name": "Bharti Airtel Limited",
+            "PerChg": -1.95,
+            "Close": 1640.9,
+            "Volume": 8576527
+        },
+        {
+            "Scrip": "KAJARIACER",
+            "Action": "SELL",
+            "Name": "Kajaria Ceramics Limited",
+            "PerChg": -1.65,
+            "Close": 1450,
+            "Volume": 113227
+        },
+        {
+            "Scrip": "ELGIEQUIP",
+            "Action": "SELL",
+            "Name": "Elgi Equipments Limited",
+            "PerChg": 0.16,
+            "Close": 680.4,
+            "Volume": 116516
+        },
+        {
+            "Scrip": "COALINDIA",
+            "Action": "SELL",
+            "Name": "Coal India Limited",
+            "PerChg": -1.03,
+            "Close": 497.2,
+            "Volume": 7170285
+        },
+        {
+            "Scrip": "KIMS",
+            "Action": "BUY",
+            "Name": "Krishna Institute of Medical Sciences Ltd",
+            "PerChg": 1.54,
+            "Close": 550.15,
+            "Volume": 313589
+        }
+    ]
+}

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntraDay Candles</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .page-item {
+            display: inline-block;
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .page-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .buy-btn, .sell-btn {
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 50px;
+        }
+        .buy-btn {
+            background-color: green;
+            color: white;
+        }
+        .sell-btn {
+            background-color: red;
+            color: white;
+        }
+        #updateTableBtn, #clearOrdersBtn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            border-radius: 50px;
+        }
+        #updateTableBtn:hover, #clearOrdersBtn:hover {
+            background-color: #0056b3;
+        }
+        #lastUpdated {
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+        #dowChange {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .positive {
+            color: green;
+        }
+        .negative {
+            color: red;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .right-container {
+            display: flex;
+            align-items: center;
+        }
+        .heading {
+            font-weight: bold;
+            font-size: 24px;
+            color: purple;
+            margin: 0 20px;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        td a {
+            color: blue;
+        }
+        #loadingSpinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <div>
+            <div id="lastUpdated">Last Updated: Never</div>
+            <div id="dowChange">DOW Change: Loading...</div>
+        </div>
+        <div class="heading">My Screener</div>
+        <div class="right-container">
+            <button id="updateTableBtn">Update Table</button>
+            <div id="loadingSpinner"></div>
+        </div>
+    </div>
+    <table id="candlesTable">
+        <thead>
+            <tr>
+                <th>Scrip</th>
+                <th>Name</th>
+                <th>Close</th>
+                <th>Volume</th>
+                <th>PerChg</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <div class="pagination"></div>
+    <div id="totalEntries">Total Entries: 0</div>
+    
+    <h2>Orders</h2>
+    <button id="clearOrdersBtn">Clear Orders</button>
+    <table id="ordersTable">
+        <thead>
+            <tr>
+                <th>Scrip</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            const rowsPerPage = 20;
+            let currentPage = 1;
+
+            function fetchData(page) {
+                const noCacheURL = 'IntraDayCandles.json?' + new Date().getTime();
+                $.getJSON(noCacheURL, function(data) {
+                    const totalEntries = data.candles.length;
+                    $('#totalEntries').text(`Total Entries: ${totalEntries}`);
+
+                    const start = (page - 1) * rowsPerPage;
+                    const end = start + rowsPerPage;
+                    const paginatedItems = data.candles.slice(start, end);
+                    displayTable(paginatedItems);
+                    setupPagination(data.candles.length, page);
+                });
+            }
+
+            function displayTable(data) {
+                const tableBody = $('#candlesTable tbody');
+                tableBody.empty();
+                $.each(data, function(i, item) {
+                    const action = item.Action || 'UNKNOWN';
+                    const buttonHTML = `<button class="order-btn ${action.toLowerCase()}-btn" data-scrip="${item.Scrip}" data-action="${action}">${action}</button>`;
+                    const scripLink = `<a href="https://chartink.com/stocks-new?from_scan=1&timeframe=15_minute&symbol=${item.Scrip}" target="_blank">${item.Scrip}</a>`;
+            
+                    const row = `<tr>
+                        <td>${scripLink}</td>
+                        <td>${item.Name}</td>
+                        <td>${item.Close}</td>
+                        <td>${item.Volume}</td>
+                        <td>${item.PerChg}</td>
+                        <td>${buttonHTML}</td>
+                    </tr>`;
+                    tableBody.append(row);
+                });
+            
+                $('.order-btn').click(function() {
+                    const scrip = $(this).data('scrip');
+                    const action = $(this).data('action');
+                    placeOrder(scrip, action);
+                });
+            }
+
+            function placeOrder(scrip, action) {
+                $.ajax({
+                    url: 'http://localhost:5000/place_order',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ scrip: scrip, action: action }),                    
+                    success: function(response) {
+                        fetchOrders(); // Fetch orders after placing a new order
+                    },
+                    error: function() {
+                        alert('Error placing order');
+                    }
+                });
+            }
+
+            function setupPagination(totalItems, currentPage) {
+                const pageCount = Math.ceil(totalItems / rowsPerPage);
+                const paginationDiv = $('.pagination');
+                paginationDiv.empty();
+                for (let i = 1; i <= pageCount; i++) {
+                    const pageItem = $('<span>').addClass('page-item').text(i);
+                    if (i === currentPage) {
+                        pageItem.addClass('active');
+                    }
+                    pageItem.on('click', function() {
+                        fetchData(i);
+                    });
+                    paginationDiv.append(pageItem);
+                }
+            }
+
+            function fetchOrders() {
+                $.get('http://localhost:5000/orders.txt', function(data) {
+                    const orders = data.trim().split('\n').map(line => {
+                        const [scrip, action] = line.split(',');
+                        return { scrip, action };
+                    });
+                    displayOrders(orders);
+                });
+            }
+
+            function displayOrders(orders) {
+                const tableBody = $('#ordersTable tbody');
+                tableBody.empty();
+                $.each(orders, function(i, order) {
+                    const row = `<tr>
+                        <td>${order.scrip}</td>
+                        <td>${order.action}</td>
+                    </tr>`;
+                    tableBody.append(row);
+                });
+            }
+
+            function clearOrders() {
+                $.ajax({
+                    url: 'http://localhost:5000/clear_orders',
+                    type: 'POST',
+                    success: function(response) {
+                        fetchOrders(); // Refresh orders table after clearing
+                    },
+                    error: function() {
+                        alert('Error clearing orders');
+                    }
+                });
+            }
+
+            $('#clearOrdersBtn').click(function() {
+                clearOrders();
+            });
+
+            $('#updateTableBtn').click(function() {
+                $('#loadingSpinner').show();
+                $.ajax({
+                    url: 'http://localhost:5000/run_chartink_scanner',
+                    type: 'POST',
+                    success: function(response) {
+                        console.log('Chartink Scanner Response:', response);
+                        fetchData(currentPage); // Refresh table after updating
+                        const now = new Date();
+                        const formattedTime = now.toLocaleString();
+                        $('#lastUpdated').text(`Last Updated: ${formattedTime}`);
+                        $('#loadingSpinner').hide();
+                        updateDowChange(); // Update DOW change after updating table
+                        console.log('Chartink Scanner Output:', response.output); // Log the output to the console
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error running chartink scanner:', xhr.responseText);
+                        $('#loadingSpinner').hide();
+                    }
+                });
+            });
+
+            function updateDowChange() {
+                $.ajax({
+                    url: 'http://localhost:5000/get_dow_change',
+                    type: 'GET',
+                    success: function(response) {
+                        const dowChangeElement = $('#dowChange');
+                        const dowChangeValue = parseFloat(response.dow_change);
+                        dowChangeElement.text(`DOW Change: ${response.dow_change}`);
+                        if (dowChangeValue < 0) {
+                            dowChangeElement.removeClass('positive').addClass('negative');
+                        } else {
+                            dowChangeElement.removeClass('negative').addClass('positive');
+                        }
+                    },
+                    error: function() {
+                        $('#dowChange').text('DOW Change: Error fetching data');
+                    }
+                });
+            }
+
+            fetchData(currentPage);
+            fetchOrders(); // Fetch orders when the page loads
+            updateDowChange(); // Update DOW change when the page loads
+        });
+    </script>
+</body>
+</html>

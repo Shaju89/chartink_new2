@@ -1,0 +1,6 @@
+Flask
+requests
+yfinance
+flask_cors
+pyyaml
+supervisor
