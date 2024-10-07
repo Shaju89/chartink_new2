@@ -138,7 +138,7 @@ def run_scanner():
         return "run_scanner : Success"
     except Exception as e:
         print(f"Error processing BUY data: {e}")
-        return f"Run_scanner : Fail -> {str(e)}"
+        return f"Run_scanner : Fail -> {str(e)} {response.data}"
 
 if __name__ == '__main__':
     try:                
