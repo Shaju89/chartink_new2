@@ -213,7 +213,7 @@
 
             function placeOrder(scrip, action) {
                 $.ajax({
-                    url: 'http://localhost:5000/place_order',
+                    url: 'https://shajustocks.netlify.app/place_order',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ scrip: scrip, action: action }),                    
@@ -243,7 +243,7 @@
             }
 
             function fetchOrders() {
-                $.get('http://localhost:5000/orders.txt', function(data) {
+                $.get('https://shajustocks.netlify.app/orders.txt', function(data) {
                     const orders = data.trim().split('\n').map(line => {
                         const [scrip, action] = line.split(',');
                         return { scrip, action };
@@ -266,7 +266,7 @@
 
             function clearOrders() {
                 $.ajax({
-                    url: 'http://localhost:5000/clear_orders',
+                    url: 'https://shajustocks.netlify.app/clear_orders',
                     type: 'POST',
                     success: function(response) {
                         fetchOrders(); // Refresh orders table after clearing
@@ -284,7 +284,7 @@
             $('#updateTableBtn').click(function() {
                 $('#loadingSpinner').show();
                 $.ajax({
-                    url: 'http://localhost:5000/run_chartink_scanner',
+                    url: 'https://shajustocks.netlify.app/run_chartink_scanner',
                     type: 'POST',
                     success: function(response) {
                         console.log('Chartink Scanner Response:', response);
@@ -305,7 +305,7 @@
 
             function updateDowChange() {
                 $.ajax({
-                    url: 'http://localhost:5000/get_dow_change',
+                    url: 'https://shajustocks.netlify.app/get_dow_change',
                     type: 'GET',
                     success: function(response) {
                         const dowChangeElement = $('#dowChange');
